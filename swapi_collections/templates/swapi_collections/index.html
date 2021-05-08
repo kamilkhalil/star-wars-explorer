@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Star Wars Explorer</title>
+</head>
+<body>
+    <h1>Star Wars Explorer</h1>
+ <h2>
+    Collections
+ </h2>
+
+ <form action="{% url 'index' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Fetch" />
+</form>
+</body>
+</html>
