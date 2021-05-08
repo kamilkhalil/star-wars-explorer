@@ -9,7 +9,17 @@
  <h2>
     Collections
  </h2>
-
+ {% if collections %}
+ <ul>
+    {% for collection in collections %}
+      <li>
+        <a href="{% url 'collection' collection.id %}">{{ collection.date }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>There are no collections. Please click fetch button to fetch first collection</p>
+  {% endif %}
  <form action="{% url 'index' %}" method="post">
     {% csrf_token %}
     <input type="submit" value="Fetch" />
