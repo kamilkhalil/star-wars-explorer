@@ -9,6 +9,22 @@
  <h2>
     {{ file_name }}
  </h2>
+{% if rows %}
+    <table>
+        <tr>
+            {% for key in rows.0 %}
+                <th>{{ key }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in rows|slice:"1:" %}
+            <tr>
+            {% for k, v in row.items %}
+                <td>{{ v }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
 </form>
 </body>
 </html>

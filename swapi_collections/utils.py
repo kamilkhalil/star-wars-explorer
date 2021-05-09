@@ -5,14 +5,13 @@ import os
 from datetime import datetime
 
 from .models import Collection
-from star_wars_explorer.settings import MEDIA_ROOT
+from star_wars_explorer.settings import COLLECTIONS_PATH
 
 
-FIELDS_TO_READ = ['name', 'height', 'mass', 'hair_color', "skin_color", "eye_color", "birth_year", "gender", "homeworld", "edited"]
-date_regex = "%Y-%m-%dT%H:%M:%S.%fZ"
-output_date_regex = "%Y-%m-%d"
-COLLECTIONS_PATH = os.path.join(MEDIA_ROOT, 'collections') #TODO: collections path defined here and in app model. Unify
-
+FIELDS_TO_READ = ['name', 'height', 'mass', 'hair_color', "eye_color", "birth_year", "gender", "homeworld", "edited"] #TODO: skin_color removed as it can have comas and current implementation doesn't handle it
+date_regex = '%Y-%m-%dT%H:%M:%S.%fZ'
+output_date_regex = '%Y-%m-%d'
+DELIMITER=','#TODO When used with "|" petl.fromcsv get SyntaxError: EOL while scanning string literal. Finding out why
 homeworld_url_to_name = {} #TODO: Better cache mechanism
 
 
@@ -40,24 +39,24 @@ def transform_response_data(data):
     return table
 
 
-def prepare_collection(date, file_name):
+def prepare_collection(date, filename):
     collection = Collection()
     collection.date = date
-    collection.file_path.name = file_name
+    collection.filename.name = filename
     return collection
 
 
 def fetch_collection():
         response = requests.get("https://swapi.dev/api/people")
         date = datetime.now()
-        file_name = f"{uuid.uuid4().hex}.csv"
-        file_path = f'{COLLECTIONS_PATH}/{file_name}'
+        filename = f"{uuid.uuid4().hex}.csv"
+        file_path = f'{COLLECTIONS_PATH}/{filename}'
         if response.status_code == 200:
-            collection = prepare_collection(date, file_name)
+            collection = prepare_collection(date, filename)
             table = transform_response_data(response)
-            table.tocsv(file_path, delimiter="|")
+            table.tocsv(file_path, delimiter=DELIMITER)
             collection.save()
             while response.status_code == 200 and response.json().get("next") is not None:
                 response = requests.get(response.json()["next"])
                 table =  transform_response_data(response)
-                table.appendcsv(file_path, delimiter="|")
+                table.appendcsv(file_path, delimiter=DELIMITER)

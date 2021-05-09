@@ -15,5 +15,8 @@ def index(request):
 
 def collection_detail(request, id):
     collection = get_object_or_404(Collection, pk=id)
-    table = petl.fromcsv(collection.file_path)
-    return render(request, "swapi_collections/collection.html", {"file_name": collection.file_path, "collection": table.data()})
+    elem_num = 11
+    table = petl.fromcsv(get_file_path(collection.filename.name))
+    rows = list(dict(zip(petl.header(table), x)) for x in table[1:elem_num])
+    print(rows)
+    return render(request, "swapi_collections/collection.html", {"file_name": collection.filename, "rows": rows})
