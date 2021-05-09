@@ -13,6 +13,7 @@ date_regex = '%Y-%m-%dT%H:%M:%S.%fZ'
 output_date_regex = '%Y-%m-%d'
 DELIMITER=','#TODO When used with "|" petl.fromcsv get SyntaxError: EOL while scanning string literal. Finding out why
 homeworld_url_to_name = {} #TODO: Better cache mechanism
+SWAPI_URL = "https://swapi.dev/api/people"
 
 
 def get_file_path(file_name):
@@ -47,7 +48,7 @@ def prepare_collection(date, filename):
 
 
 def fetch_collection():
-        response = requests.get("https://swapi.dev/api/people")
+        response = requests.get(SWAPI_URL)
         date = datetime.now()
         filename = f"{uuid.uuid4().hex}.csv"
         file_path = f'{COLLECTIONS_PATH}/{filename}'
