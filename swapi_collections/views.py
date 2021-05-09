@@ -18,17 +18,20 @@ def index(request):
 def collection_detail(request, id): #TODO: validation of parameters
     collection = get_object_or_404(Collection, pk=id)
     table = petl.fromcsv(get_file_path(collection.filename.name))
+    headers = petl.header(table)
     if request.method == "GET":
         if request.session.get('filter') is not None :
-            print(f"Tu jestem {request.session.get('filter')}")
+            print(f"Filter data: {request.session.get('filter')}")
             table = petl.valuecounts(table, *request.session.get("filter"))
             del request.session['filter']
         if request.GET.get("load_button") == "Load More":
             elem_num = int(request.GET.get("rows_count",  0)) + 11
         else:
             elem_num = 11
+            if "frequency" in petl.header(table):
+                table = petl.cut(table, *range(0, 3))
         rows = list(dict(zip(petl.header(table), x)) for x in table[1:elem_num])
-        return render(request, "swapi_collections/collection.html", {"file_name": collection.filename, "rows": rows})
+        return render(request, "swapi_collections/collection.html", {"file_name": collection.filename, "rows": rows, "headers": headers})
     if request.method == "POST":
         print(request.POST)
         if request.POST.get("on") is not None:

@@ -8,7 +8,7 @@
 {% if rows %}
     <form method='post'>
         {% csrf_token %}
-        {% for key in rows.0 %}
+        {% for key in headers %}
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
                 <input type="checkbox" autocomplete="off" name="on" value={{ key }}> {{ key }}
