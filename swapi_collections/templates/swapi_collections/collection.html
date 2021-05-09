@@ -24,7 +24,10 @@
             </tr>
         {% endfor %}
     </table>
+    <form method='get' action='#'>
+        <input type="hidden" name="rows_count" value="{{ rows|length  }}" />
+        <input type="submit" value="Load More" name="load_button"/>
+    </form> 
 {% endif %}
-</form>
 </body>
 </html>
