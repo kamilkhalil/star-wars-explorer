@@ -6,12 +6,12 @@
     {{ file_name }}
  </h2>
 {% if rows %}
-    <form method='get'>
-        <!-- {% csrf_token %} -->
+    <form method='post'>
+        {% csrf_token %}
         {% for key in rows.0 %}
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
-                <input type="checkbox" autocomplete="off" name="{{ key }}"> {{ key }}
+                <input type="checkbox" autocomplete="off" name="on" value={{ key }}> {{ key }}
                 </label>
             </div>
         {% endfor %}
