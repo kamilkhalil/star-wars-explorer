@@ -1,15 +1,7 @@
-{% load static %}
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <script src="{% static 'swapi_collections/script.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'swapi_collections/bootstrap.css' %}">
-    <title>Star Wars Explorer</title>
-</head>
-<body>
-    <h1>Star Wars Explorer</h1>
+{% block title %}Star Wars Explorer{% endblock %}
+{% block content %}
  <h2>
     {{ file_name }}
  </h2>
@@ -24,7 +16,7 @@
             </div>
         {% endfor %}
         <input type="submit" value="filter" name="filter"/>
-</form> 
+    </form> 
     <table class="table table-hover table-striped">
         <tr>
             {% for key in rows.0 %}
@@ -44,5 +36,4 @@
         <input type="submit" value="Load More" name="load_button"/>
     </form> 
 {% endif %}
-</body>
-</html>
+{% endblock %}

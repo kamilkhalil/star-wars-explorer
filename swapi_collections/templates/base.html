@@ -1,0 +1,16 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <script src="{% static 'swapi_collections/script.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'swapi_collections/bootstrap.css' %}">
+</head>
+<body>
+    <h1 class="bg-warning">Star Wars Explorer <a href="{% url 'index' %}">Collections</a></h1>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

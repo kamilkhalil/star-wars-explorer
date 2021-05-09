@@ -1,28 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Star Wars Explorer</title>
-</head>
-<body>
-    <h1>Star Wars Explorer</h1>
- <h2>
-    Collections
- </h2>
- {% if collections %}
- <ul>
-    {% for collection in collections %}
-      <li>
-        <a href="{% url 'collection' collection.id %}">{{ collection.date }}</a>
-      </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p>There are no collections. Please click fetch button to fetch first collection</p>
-  {% endif %}
- <form action="{% url 'index' %}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="Fetch" />
-</form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Star Wars Explorer{% endblock %}
+{% block content %}
+    <form action="{% url 'index' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Fetch" name="Fetch"/>
+    </form>
+    {% if collections %}
+    <ul class="list-group">
+        {% for collection in collections %}
+        <li>
+            <a href="{% url 'collection' collection.id %}">{{ collection.date }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>There are no collections. Please click fetch button to fetch first collection</p>
+    {% endif %}
+{% endblock %}
