@@ -10,7 +10,7 @@
     <ul class="list-group">
         {% for collection in collections %}
         <li>
-            <a href="{% url 'collection' collection.id %}">{{ collection.date }}</a>
+            <a href="{% url 'detail' collection.id %}">{{ collection.date }}</a>
         </li>
         {% endfor %}
     </ul>

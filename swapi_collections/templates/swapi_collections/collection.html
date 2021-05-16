@@ -6,17 +6,17 @@
     {{ file_name }}
  </h2>
 {% if rows %}
-    <form method='post'>
-        {% csrf_token %}
+    <form method='get'>
+        <!-- {% csrf_token %} -->
         {% for key in headers %}
             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-secondary">
-                <input type="checkbox" autocomplete="off" name="on" value={{ key }}> {{ key }}
+                <input type="checkbox" autocomplete="off" name="filter" value={{ key }}> {{ key }}
                 </label>
             </div>
         {% endfor %}
-        <input type="submit" value="filter" name="filter"/>
-    </form> 
+        <input type="submit" value="filter"/>
+    </form>
     <table class="table table-hover table-striped">
         <tr>
             {% for key in rows.0 %}
@@ -34,6 +34,6 @@
     <form method='get' action='#'>
         <input type="hidden" name="rows_count" value="{{ rows|length  }}" />
         <input type="submit" value="Load More" name="load_button"/>
-    </form> 
+    </form>
 {% endif %}
 {% endblock %}
