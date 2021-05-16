@@ -5,6 +5,7 @@ from datetime import datetime
 
 import petl
 from django.utils import timezone
+from requests.models import Response
 
 from .models import Collection
 from star_wars_explorer.settings import COLLECTIONS_PATH
@@ -31,7 +32,7 @@ def get_file_path(file_name):
     return os.path.join(COLLECTIONS_PATH, file_name)
 
 
-def get_name_from_url(url):
+def get_name_from_url(url: str):
     if homeworld_url_to_name.get(url) is not None:
         return homeworld_url_to_name[url]
     response = requests.get(url)
@@ -42,8 +43,8 @@ def get_name_from_url(url):
 
 
 # TODO: Data validation and error handling
-def transform_response_data(data):
-    table = petl.fromdicts(data.json()["results"])
+def transform_response_data(response: Response):
+    table = petl.fromdicts(response.json()["results"])
     table = table.cut(FIELDS_TO_READ)
     table = table.rename("edited", "date")
     date_regex = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -54,7 +55,7 @@ def transform_response_data(data):
     return table
 
 
-def prepare_collection(date, filename):
+def prepare_collection(date: timezone, filename: str):
     collection = Collection()
     collection.date = date
     collection.filename.name = filename

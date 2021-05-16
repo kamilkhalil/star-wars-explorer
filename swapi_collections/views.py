@@ -1,13 +1,17 @@
 import petl
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .utils import fetch_collection, get_file_path, DELIMITER
 from .models import Collection
 
 
+log = logging.getLogger(__name__)
+
+
 def index(request):
     if request.method == "POST":
-        print(request.POST)
         fetch_collection()
         return redirect("index")
     elif request.method == "GET":
@@ -17,7 +21,7 @@ def index(request):
         )
 
 
-def collection_detail(request, collection_id):  # TODO: validation of parameters
+def collection_detail(request, collection_id: int):  # TODO: validation of parameters
     collection = get_object_or_404(Collection, pk=collection_id)
     table = petl.fromcsv(get_file_path(collection.filename.name), delimiter=DELIMITER)
     try:
@@ -28,12 +32,13 @@ def collection_detail(request, collection_id):  # TODO: validation of parameters
     if request.method == "GET":
         if request.GET.get("filter"):
             try:
+                log.debug(f"going to use filter {request.GET.getlist('filter')}")
                 table = petl.valuecounts(table, *request.GET.getlist("filter"))
                 elem_num = len(table)
                 if "frequency" in petl.header(table):
                     table = petl.cut(table, *range(0, 3))
             except (RuntimeError, petl.errors.FieldSelectionError) as e:
-                print("There is no data to filter")
+                log.warning("There is no data to filter")
                 table = []
                 elem_num = 0
         elif request.GET.get("load_button") == "Load More":
@@ -43,7 +48,7 @@ def collection_detail(request, collection_id):  # TODO: validation of parameters
         try:
             rows = list(dict(zip(petl.header(table), x)) for x in table[1:elem_num])
         except RuntimeError as e:
-            print("Something")
+            log.warning("An error occured while preparing rows. Rows will be empty.")
             rows = []
         return render(
             request,
