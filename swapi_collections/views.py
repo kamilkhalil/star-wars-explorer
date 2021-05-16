@@ -12,10 +12,12 @@ def index(request):
         return redirect("index")
     elif request.method == "GET":
         char_collections = Collection.objects.order_by("-date")
-        return render(request, "swapi_collections/index.html", {"collections": char_collections})
+        return render(
+            request, "swapi_collections/index.html", {"collections": char_collections}
+        )
 
 
-def collection_detail(request, collection_id): #TODO: validation of parameters
+def collection_detail(request, collection_id):  # TODO: validation of parameters
     collection = get_object_or_404(Collection, pk=collection_id)
     table = petl.fromcsv(get_file_path(collection.filename.name), delimiter=DELIMITER)
     try:
@@ -23,19 +25,19 @@ def collection_detail(request, collection_id): #TODO: validation of parameters
     except:
         headers = []
 
-    if request.method == 'GET':
-        if request.GET.get('filter'):
+    if request.method == "GET":
+        if request.GET.get("filter"):
             try:
-                table = petl.valuecounts(table, *request.GET.getlist('filter'))
+                table = petl.valuecounts(table, *request.GET.getlist("filter"))
                 elem_num = len(table)
-                if 'frequency' in petl.header(table):
+                if "frequency" in petl.header(table):
                     table = petl.cut(table, *range(0, 3))
             except (RuntimeError, petl.errors.FieldSelectionError) as e:
-                print('There is no data to filter')
+                print("There is no data to filter")
                 table = []
                 elem_num = 0
-        elif request.GET.get('load_button') == 'Load More':
-            elem_num = int(request.GET.get('rows_count',  0)) + 11
+        elif request.GET.get("load_button") == "Load More":
+            elem_num = int(request.GET.get("rows_count", 0)) + 11
         else:
             elem_num = 11
         try:
@@ -43,7 +45,8 @@ def collection_detail(request, collection_id): #TODO: validation of parameters
         except RuntimeError as e:
             print("Something")
             rows = []
-        return render(request, 'swapi_collections/collection.html', {'file_name': collection.filename, 'rows': rows, 'headers': headers})
-
-
-
+        return render(
+            request,
+            "swapi_collections/collection.html",
+            {"file_name": collection.filename, "rows": rows, "headers": headers},
+        )

@@ -10,9 +10,20 @@ from .models import Collection
 from star_wars_explorer.settings import COLLECTIONS_PATH
 
 
-FIELDS_TO_READ = ['name', 'height', 'mass', 'hair_color', "eye_color", "skin_color", "birth_year", "gender", "homeworld", "edited"]
-DELIMITER='\t'
-homeworld_url_to_name = {} #TODO: Better cache mechanism
+FIELDS_TO_READ = [
+    "name",
+    "height",
+    "mass",
+    "hair_color",
+    "eye_color",
+    "skin_color",
+    "birth_year",
+    "gender",
+    "homeworld",
+    "edited",
+]
+DELIMITER = "\t"
+homeworld_url_to_name = {}  # TODO: Better cache mechanism
 SWAPI_URL = "https://swapi.dev/api/people"
 
 
@@ -30,14 +41,16 @@ def get_name_from_url(url):
         return response["name"]
 
 
-#TODO: Data validation and error handling
+# TODO: Data validation and error handling
 def transform_response_data(data):
     table = petl.fromdicts(data.json()["results"])
     table = table.cut(FIELDS_TO_READ)
     table = table.rename("edited", "date")
-    date_regex = '%Y-%m-%dT%H:%M:%S.%fZ'
-    table = table.convert('date', lambda x: datetime.strptime(x, date_regex).strftime("%Y-%m-%d"))
-    table = table.convert('homeworld', get_name_from_url)
+    date_regex = "%Y-%m-%dT%H:%M:%S.%fZ"
+    table = table.convert(
+        "date", lambda x: datetime.strptime(x, date_regex).strftime("%Y-%m-%d")
+    )
+    table = table.convert("homeworld", get_name_from_url)
     return table
 
 
@@ -49,15 +62,15 @@ def prepare_collection(date, filename):
 
 
 def fetch_collection():
-        response = requests.get(SWAPI_URL)
-        filename = f"{uuid.uuid4().hex}.csv"
-        if response.status_code == 200:
-            collection = prepare_collection(timezone.now(), filename)
+    response = requests.get(SWAPI_URL)
+    filename = f"{uuid.uuid4().hex}.csv"
+    if response.status_code == 200:
+        collection = prepare_collection(timezone.now(), filename)
+        table = transform_response_data(response)
+        file_path = f"{COLLECTIONS_PATH}/{filename}"
+        table.tocsv(file_path, delimiter=DELIMITER)
+        collection.save()
+        while response.status_code == 200 and response.json().get("next") is not None:
+            response = requests.get(response.json()["next"])
             table = transform_response_data(response)
-            file_path = f'{COLLECTIONS_PATH}/{filename}'
-            table.tocsv(file_path, delimiter=DELIMITER)
-            collection.save()
-            while response.status_code == 200 and response.json().get("next") is not None:
-                response = requests.get(response.json()["next"])
-                table =  transform_response_data(response)
-                table.appendcsv(file_path, delimiter=DELIMITER)
+            table.appendcsv(file_path, delimiter=DELIMITER)
