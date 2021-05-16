@@ -1,10 +1,9 @@
+from unittest.mock import patch
+
 from django.test import TestCase, Client, client
 from django.urls import reverse
 from django.utils import timezone
-from django.core.files.uploadedfile import SimpleUploadedFile
-from unittest.mock import patch
 
-from swapi_collections.models import Collection
 from swapi_collections.utils import FIELDS_TO_READ, prepare_collection
 
 
@@ -19,6 +18,7 @@ class TestViews(TestCase):
     def test_index_GET(self):
         response = self.client.get(self.index_url)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['collections']), 1)
         self.assertTemplateUsed(response, 'swapi_collections/index.html')
 
     @patch('swapi_collections.views.fetch_collection')
@@ -31,6 +31,9 @@ class TestViews(TestCase):
         mock_fromcsv.return_value = [FIELDS_TO_READ, ['Luke Skywalker', '172', '77', 'blond', 'blue', '19BBY', 'male', 'Tatooine', '2014-12-20']]
         response = self.client.get(self.detail_url)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_name'], 'collection.csv')
+        self.assertEqual(len(response.context['rows']), 1)
+        self.assertEqual(response.context['headers'], tuple(FIELDS_TO_READ))
         self.assertTemplateUsed(response, 'swapi_collections/collection.html')
 
     @patch('swapi_collections.views.petl.fromcsv')
@@ -38,11 +41,41 @@ class TestViews(TestCase):
         mock_fromcsv.return_value = [FIELDS_TO_READ, ['Luke Skywalker', '172', '77', 'blond', 'blue', '19BBY', 'male', 'Tatooine', '2014-12-20']]
         response = self.client.get(self.detail_url, {'load_button': "Load More"})
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_name'], 'collection.csv')
+        self.assertEqual(len(response.context['rows']), 1)
+        self.assertEqual(response.context['headers'], tuple(FIELDS_TO_READ))
         self.assertTemplateUsed(response, 'swapi_collections/collection.html')
 
     @patch('swapi_collections.views.petl.fromcsv')
     def test_collection_detail_GET_filter(self, mock_fromcsv):
         mock_fromcsv.return_value = [FIELDS_TO_READ, ['Luke Skywalker', '172', '77', 'blond', 'blue', '19BBY', 'male', 'Tatooine', '2014-12-20']]
-        response = self.client.get(self.detail_url, {'filter': ['hair_color', 'eye_color']})
+        filter_content = ['hair_color', 'eye_color']
+        response = self.client.get(self.detail_url, {'filter': filter_content})
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_name'], 'collection.csv')
+        self.assertEqual(len(response.context['rows']), 1)
+        self.assertEqual(list(response.context['rows'][0].keys()), filter_content + ['count'])
+        self.assertEqual(response.context['headers'], tuple(FIELDS_TO_READ))
+        self.assertTemplateUsed(response, 'swapi_collections/collection.html')
+
+    @patch('swapi_collections.views.petl.fromcsv')
+    def test_collection_detail_GET_filter_no_data(self, mock_fromcsv):
+        mock_fromcsv.return_value = []
+        filter_content = ['hair_color', 'eye_color']
+        response = self.client.get(self.detail_url, {'filter': filter_content})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_name'], 'collection.csv')
+        self.assertEqual(len(response.context['rows']), 0)
+        self.assertEqual(response.context['headers'], [])
+        self.assertTemplateUsed(response, 'swapi_collections/collection.html')
+
+    @patch('swapi_collections.views.petl.fromcsv')
+    def test_collection_detail_GET_wrong_filter(self, mock_fromcsv):
+        mock_fromcsv.return_value = [FIELDS_TO_READ, ['Luke Skywalker', '172', '77', 'blond', 'blue', '19BBY', 'male', 'Tatooine', '2014-12-20']]
+        filter_content = ['non_existent_field']
+        response = self.client.get(self.detail_url, {'filter': filter_content})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_name'], 'collection.csv')
+        self.assertEqual(len(response.context['rows']), 0)
+        self.assertEqual(response.context['headers'], tuple(FIELDS_TO_READ))
         self.assertTemplateUsed(response, 'swapi_collections/collection.html')
